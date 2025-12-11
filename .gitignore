@@ -8,3 +8,12 @@ __pycache__/
 .env
 .envrc
 .venv
+
+# Ignore all images
+*.png
+*.jpg
+
+# Ignore particular folders
+Weitzman_factorial_results/
+Weitzman_heuristic_results/
+Sequences_visualization/
