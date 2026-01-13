@@ -14,6 +14,4 @@ __pycache__/
 *.jpg
 
 # Ignore particular folders
-Weitzman_factorial_results/
-Weitzman_heuristic_results/
-Sequences_visualization/
+results/
