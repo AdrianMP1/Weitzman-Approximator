@@ -1,0 +1,78 @@
+# --------------------
+# Experiment configuration
+# --------------------
+
+# --------------------
+# Metadata
+# --------------------
+experiment:
+  name: "weitzman_baseline"
+  description: "Baseline experiment"
+  author: "Anonim"
+  seed: 42
+
+# --------------------
+# Data / instances
+# --------------------
+data:
+  instances_dir: "data/PFAs_Convex"
+  instance_pattern: ".POF"
+  max_instances: null
+  labeled: false
+
+# --------------------
+# Algorithm Config
+# Method core-behavior
+# --------------------
+algorithm:
+  name: "christofides"   # Select implementation
+  parameters:                 # Parameters algorithm-specific
+    #kind: "max"
+    mst_mode: "max"
+    reverse: true
+
+# --------------------
+# Metrics
+# --------------------
+metrics:
+  compute:                # weitzman | energy | HV | statistcs
+    - weitzman
+    - energy
+    - statistics
+
+  reference_point:        # Optional (only for HV)
+    type: "nadir"
+    values: null          # Infer from data
+
+# --------------------
+# Output control
+# --------------------
+output:
+  save_intermediate: true
+  formats:
+    fronts:   "pof"       # npy, pof, txt
+    summary:  "json"      # json, yaml
+    values:   "npy"       # npy, bin, txt
+
+# --------------------
+# Logging (CLI)
+# --------------------
+logging:
+  #level: "INFO"           # DEBUG | INFO | WARNING | ERROR
+  #log_metrics_every: 50
+  log_memory: false
+
+# --------------------
+# Plotting
+# --------------------
+plotting:
+  #enabled: true
+  plots:
+    - boxplot
+  show: false
+  dpi: 200
+
+# --------------------
+# Runtime (CLI)
+# --------------------
+
