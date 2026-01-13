@@ -20,5 +20,7 @@ This will allow changes to the source code to be reflected immediately.
 ├── pyproject.toml
 └── src/
     └── weitzman/
-        └── __init__.py
-
+        ├── __init__.py
+        ├── io/
+        ├── metrics/
+        └── reporting/
