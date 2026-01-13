@@ -18,9 +18,16 @@ This will allow changes to the source code to be reflected immediately.
 ## Project Structure
 .
 ├── pyproject.toml
+├── scripts/
+├── configs/
+├── data/
 └── src/
     └── weitzman/
         ├── __init__.py
         ├── io/
+        ├── utils/
         ├── metrics/
-        └── reporting/
+        ├── plotting/
+        ├── reporting/
+        ├── pipelines/
+        └── algorithms/
