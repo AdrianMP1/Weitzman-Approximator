@@ -89,7 +89,7 @@ def make_eulerian_multigraph_adj(
     return adj
 
 
-def christofides(lattice_path: Path, labeled: str, n: int, start_mst: int, start_euler: int,
+def christofides(lattice_path: Path, labeled: str, start_mst: int, start_euler: int,
                  mst_mode: str = "min", reverse: bool = False) -> None:
 
     # Load lattice
@@ -98,6 +98,9 @@ def christofides(lattice_path: Path, labeled: str, n: int, start_mst: int, start
     # Compute distance matrix
     d_matrix = compute_distance_matrix(lattice)
     #print(d_matrix)
+
+    # Get n
+    n = d_matrix.shape[0]
 
     # Build an MST from the set of vertices
     tree, _ = spanning_tree(d_matrix, start=start_mst, mode=mst_mode)
@@ -165,14 +168,17 @@ def run(lattice_params: dict[str, str | Path | bool], outdir: Path, **kwargs) ->
     lattice_ext = lattice_params["lattice_ext"]
     lattice_labeled = lattice_params["lattice_labeled"]
 
-    lattices = reversed(os.listdir(str(lattice_dir)))
+    # Load lattices
+    lattices = sorted(os.listdir(str(lattice_dir)))
     lattices = [lattice for lattice in lattices if lattice.endswith(lattice_ext)]
 
+    ## Get algorithm parameters
     mst_mode = kwargs.get("mst_mode", "min")
     reverse_seq = kwargs.get("reverse", True)
 
     print(f"Christofides: mst_mode: {mst_mode}, reverse: {reverse_seq}.\n")
 
+    # Solve all instances
     for lattice in lattices:
 
         # Get n
@@ -182,20 +188,18 @@ def run(lattice_params: dict[str, str | Path | bool], outdir: Path, **kwargs) ->
         lattice_path = lattice_dir / lattice
 
         # To store values
-        all_values = []
-        all_sequences = []
+        all_values: list[float] = []
+        all_sequences: list[tuple[int]] = []
 
         # For all starting points
         for start in range(0, n):
 
-            # Execute twice around heuristic
-            removal_sequence, weitzman_value = christofides(lattice_path=lattice_path, labeled=lattice_labeled, n=n,
+            # Execute christofides heuristic
+            removal_sequence, value = christofides(lattice_path=lattice_path, labeled=lattice_labeled,
                                                     start_mst=start, start_euler=start,
                                                     mst_mode=mst_mode, reverse=reverse_seq)
 
-            #print(removal_sequence, " -> ", weitzman_value)
-
-            all_values.append(weitzman_value)
+            all_values.append(value)
             all_sequences.append(removal_sequence)
 
         # To numpy
