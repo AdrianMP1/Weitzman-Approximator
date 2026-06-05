@@ -1,0 +1,32 @@
+# ---------------------------------------------------------------------------
+# Debug configuration - fast single-algorithm run for development
+# ---------------------------------------------------------------------------
+
+experiment:
+  name: "debug"
+  description: "Quick run with farthest_neighbour on a small dataset."
+  seed: 0
+
+data:
+  instances_dir: "data/CovLoss(Concave-Convex-Linear)/PFAs_CovLoss_Linear/m3_p4"
+  instance_pattern: ".POF"
+  labeled: false
+
+algorithms:
+  names: ["farthest_neighbour"]
+
+  config:
+    farthest_neighbour:
+      kind: "max"
+      reverse: true
+
+exact_solver:
+  n_max: 15              # debug: only the smallest instances
+
+brute_force:
+  n_range: [4, 6]
+
+plots:
+  show: false
+  dpi: 100
+  fontsize: 12

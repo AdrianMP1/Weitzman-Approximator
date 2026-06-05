@@ -1,0 +1,57 @@
+# ---------------------------------------------------------------------------
+# Experiment configuration
+# ---------------------------------------------------------------------------
+
+experiment:
+  name: "weitzman_baseline"
+  description: "Run all heuristics on the linear Pareto front dataset."
+  seed: 42
+
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
+data:
+  instances_dir: "data/CovLoss/PFAs_CovLoss_Linear/m3_p5"
+  instance_pattern: ".POF"
+  labeled: false
+
+# ---------------------------------------------------------------------------
+# Algorithms
+# ---------------------------------------------------------------------------
+algorithms:
+  # Use ["all"] to run every registered algorithm, or list specific names:
+  # ["farthest_neighbour", "twice_around", "christofides", "global_max_min"]
+  names: ["all"]
+
+  config:
+    farthest_neighbour:
+      kind: "max"        # "max" (farthest-first insertion) or "min" (nearest-first)
+      reverse: true
+
+    twice_around:
+      mst_mode: "max"    # "max" (maximum spanning tree) or "min"
+      reverse: true
+
+    christofides:
+      mst_mode: "max"
+      reverse: true
+
+    global_max_min:
+      parameter_value: "None"  # no parameters (dummy placeholder)
+
+# ---------------------------------------------------------------------------
+# Brute force (used by experiments/run_brute_force.py only)
+# ---------------------------------------------------------------------------
+exact_solver:
+  n_max: 28              # run BB exact solver for instances with n ≤ n_max
+
+brute_force:
+  n_range: [4, 12]       # only instances with n in this range are processed (distribution analysis)
+
+# ---------------------------------------------------------------------------
+# Plots
+# ---------------------------------------------------------------------------
+plots:
+  show: false
+  dpi: 200
+  fontsize: 12
