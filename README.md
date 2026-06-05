@@ -1,6 +1,6 @@
-# Weitzman Diversity on Pareto Fronts
+# Weitzman Diversity Approximator on Pareto Fronts
 
-Source code accompanying the paper:<br>
+Source code for the paper:<br>
 **A Permutation-Based Reformulation for Approximating Weitzman Diversity for Benchmarking in Multi-Objective Optimization** <br>
 [Parallel Problem Solving From Nature, 2026]
 
@@ -55,7 +55,7 @@ All dependencies are declared in `pyproject.toml` and installed automatically.
 
 ```bash
 # Clone the repository
-git clone <repo-url> Weitzman_Project
+git clone https://github.com/AdrianMP1/Weitzman-Approximator.git Weitzman_Project
 cd Weitzman_Project
 
 # (Recommended) activate your environment first
@@ -123,12 +123,12 @@ python main.py run --config debug.yaml -v
 ## Repository structure
 
 ```
-Clean_Weitzman/
-├── main.py                          ← single entry point (run / batch / plot)
+Weitzman_Project/
+├── main.py                          <- single entry point (run / batch / plot)
 ├── pyproject.toml
 ├── configs/
-│   ├── experiment.yaml              ← full experiment (all algorithms, all instances)
-│   └── debug.yaml                   ← fast single-algorithm sanity check
+│   ├── experiment.yaml              <- full experiment (all algorithms, all instances)
+│   └── debug.yaml                   <- fast single-algorithm sanity check
 ├── data/
 │   ├── CovLoss(Concave-Convex-Linear)/
 │   │   ├── PFAs_CovLoss_Concave/m3_p4 … m3_p19/
@@ -139,19 +139,19 @@ Clean_Weitzman/
 │       ├── PFAs_UnifLoss_Convex/m3_p4 … m3_p19/
 │       └── PFAs_UnifLoss_Linear/m3_p4 … m3_p19/
 ├── experiments/
-│   ├── run_batch.py                 ← orchestrates the full pipeline end-to-end
-│   ├── run_heuristics.py            ← run all configured algorithms (used by run_batch)
-│   ├── run_brute_force.py           ← O(n!) exact solver for small n
-│   ├── run_exact_solver.py          ← B&B exact solver for small n
-│   ├── aggregate_results.py         ← collects per-instance .npy to produce a data.csv
-│   ├── compute_kendall_tau.py       ← Kendall tau correlation table
-│   └── plot_results.py              ← regenerate figures from a finished run
+│   ├── run_batch.py                 <- orchestrates the full pipeline end-to-end
+│   ├── run_heuristics.py            <- run all configured algorithms (used by run_batch)
+│   ├── run_brute_force.py           <- O(n!) exact solver for small n
+│   ├── run_exact_solver.py          <- B&B exact solver for small n
+│   ├── aggregate_results.py         <- collects per-instance .npy to produce a data.csv
+│   ├── compute_kendall_tau.py       <- Kendall tau correlation table
+│   └── plot_results.py              <- regenerate figures from a finished run
 └── weitzman/
-    ├── algorithms/                  ← one module per heuristic + brute force
-    ├── metrics/                     ← Weitzman computation (B&B), Pure Diversity
-    ├── plotting/                    ← trendlines, box plots
-    ├── io/                          ← .POF loaders, config loader, writers
-    └── utils/                       ← core math, run context, logging
+    ├── algorithms/                  <- one module per heuristic + brute force
+    ├── metrics/                     <- Weitzman computation (B&B), Pure Diversity
+    ├── plotting/                    <- trendlines, box plots
+    ├── io/                          <- .POF loaders, config loader, writers
+    └── utils/                       <- core math, run context, logging
 ```
 
 **Naming convention for data subfolders:** `m3_pX` denotes instances on a
@@ -167,8 +167,8 @@ The `data/` directory is organised by Coverage and Uniformity, then for Pareto f
 
 | Group | Geometries | Instances per geometry |
 |-------|-----------|----------------------|
-| `CovLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage values |
-| `UnifLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage values |
+| `CovLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage degree values |
+| `UnifLoss` | Concave, Convex, Linear | 16 sizes × 6 uniformity degree values |
 
 Each `.POF` file contains one three-objective Pareto front. Files at size `m3_p4`
 have 15 points; files at `m3_p19` have 210 points.
@@ -181,11 +181,11 @@ Both configs (`experiment.yaml` and `debug.yaml`) share the same schema.
 
 ```yaml
 experiment:
-  name: "weitzman_baseline"
+  name: "Weitzman_Project"
   seed: 42
 
 data:
-  instances_dir: "data/CovLoss(Concave-Convex-Linear)/PFAs_CovLoss_Linear/m3_p4"
+  instances_dir: "data/CovLoss(Concave-Convex-Linear)/PFAs_CovLoss_Linear/m3_p4" # For single runs, not batch
   instance_pattern: ".POF"
   labeled: false          # true for files with " -> label" suffix on each line
 
@@ -201,14 +201,15 @@ algorithms:
       reverse: true
 
     twice_around:
-      mst_mode: "max"     # "max" = maximum spanning tree
+      mst_mode: "max"     # "max" = maximum spanning tree, "min" = minimum spanning tree
       reverse: true
 
     christofides:
-      mst_mode: "max"
+      mst_mode: "max"     # same as TAT
       reverse: true
 
     global_max_min:       # No parameters
+      parameter_value: "None" # Dummy variable
 
 exact_solver:
   n_max: 28               # run B&B exact solver for instances with n <= n_max
@@ -228,10 +229,10 @@ plots:
 
 | Key | Full name | Complexity | Description |
 |-----|-----------|-----------|-------------|
-| `farthest_neighbour` | Farthest-Neighbour | $O(n^3)$ | Greedy farthest-first insertion; exhaustive starting vertices (paper: FN) |
-| `twice_around` | Twice-Around-the-Tree | $O(n^2 \log n)$ | Maximum spanning tree -> doubled edges -> Euler circuit -> Hamiltonian shortcut |
-| `christofides` | Christofides-inspired | $O(n^3)$ | Maximum spanning tree -> odd-degree matching -> Euler circuit -> Hamiltonian shortcut |
-| `global_max_min` | Global Max-Min | $O(n^3)$ | Greedy sequence: $i^* = \arg\max_{u \notin Q} \min_{v \in Q} d(u, v)$; exhaustive starting vertices |
+| `farthest_neighbour` | Farthest-Neighbour | $O(n^3)$ | Greedy farthest-first insertion; exhaustive starting vertices (FN) |
+| `twice_around` | Twice-Around-the-Tree | $O(n^2 \log n)$ | Maximum spanning tree -> doubled edges -> Euler circuit -> Hamiltonian shortcut (TAT) |
+| `christofides` | Christofides-inspired | $O(n^3)$ | Maximum spanning tree -> odd-degree matching -> Euler circuit -> Hamiltonian shortcut (CHR) |
+| `global_max_min` | Global Max-Min | $O(n^3)$ | Greedy sequence: $i^* = \arg\max_{u \notin Q} \min_{v \in Q} d(u, v)$; exhaustive starting vertices (GMM) |
 
 The brute-force solver enumerates all $n!$ sequences and serves as ground truth (B&B too); it is not a heuristic and is not included in the algorithm registry.
 
@@ -243,27 +244,29 @@ After `python main.py batch`, the results tree is:
 
 ```
 results/
-├── data.csv                             ← aggregated results (all cells, all algorithms)
+├── data.csv                             <- aggregated results (all cells, all algorithms)
+├── kendall_tau_coverage_pivot.csv       <- Kendall Tau values (all cards, all algorithms, all geometries)
+├── kendall_tau_uniformity_pivot.csv     <- Kendall Tau values (all cards, all algorithms, all geometries)
 ├── batch/
-│   └── <kind>_<geom>_<card>/            ← e.g. coverage_Linear_m3_p4
+│   └── <kind>_<geom>_<card>/            <- e.g. coverage_Linear_m3_p4
 │       ├── <algorithm>/
 │       │   ├── values/
-│       │   │   └── values_<instance>.npy ← shape (n,): W score per starting vertex
+│       │   │   └── values_<instance>.npy <- shape (n,): W score per starting vertex
 │       │   ├─── sequences/
 │       │   │     └── sequences_<instance>.npy
-│       │   └── timing.json              ← execution time summary
+│       │   └── timing.json              <- execution time summary
 │       ├── exact/
 │       │   ├── values/
-│       │   │   └── values_<instance>.npy ← shape (n,): W score per starting vertex
+│       │   │   └── values_<instance>.npy <- shape (n,): W score per starting vertex
 │       │   ├── sequences/
 │       │   │   └── sequences_<instance>.npy
-│       │   └── timing.json              ← execution time summary
-│       └── factorial/                   ← brute-force (only for n ≤ n_range[1])
+│       │   └── timing.json              <- execution time summary
+│       └── factorial/                   <- brute-force (only for n ≤ n_range[1])
 │           ├── values/
-│           │   └── values_<NNN>_points.npy  ← shape (n!,): all W values
+│           │   └── values_<NNN>_points.npy  <- shape (n!,): all W values
 │           ├── best_sequences/
 │           └── worst_sequences/
-└── figures/                             ← after python main.py trendline or batch
+└── figures/                             <- after python main.py trendline or batch
     ├── Coverage/
     │   ├── Linear/
     │   │   └── trendline_<kind>_<geom>_<card>.{pdf,png}
@@ -282,7 +285,7 @@ results/
 | `lattice_deg` | coverage/uniformity parameter (0.6 – 1.0) |
 | `algorithm` | registry key (e.g. `farthest_neighbour`) |
 | `min`, `q1`, `median`, `q3`, `max` | distribution of values across starting vertices |
-| `W-value` | exact W(A) from brute force (NaN or empty when n > n_max) |
+| `W-value` | exact W(A) from B&B (NaN or empty when n > n_max) |
 | `PD` | Pure Diversity metric with Euclidean distance |
 | `time_s` | execution time in seconds |
 
