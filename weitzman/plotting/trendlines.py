@@ -14,6 +14,8 @@ Usage via main.py:
     python main.py trendline [--kind coverage] [--geom Linear] [--card 21]
 """
 
+import shutil
+import logging
 import argparse
 import numpy as np
 import pandas as pd
@@ -22,6 +24,8 @@ import matplotlib.pyplot as plt
 
 from pathlib import Path
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Layout constants (IEEE/Springer-style single-column)
@@ -105,10 +109,16 @@ def _set_publisher_rcparams() -> None:
         "svg.fonttype":    "none",
 
         # --- LaTeX Render ---
-        "text.usetex":     True,
-        "pgf.texsystem":   "pdflatex",
-        "pgf.rcfonts":     False,
-        "pgf.preamble":    r"\providecommand{\mathdefault}[1]{#1}",
+        **(
+            {
+                "text.usetex":   True,
+                "pgf.texsystem": "pdflatex",
+                "pgf.rcfonts":   False,
+                "pgf.preamble":  r"\providecommand{\mathdefault}[1]{#1}",
+            }
+            if shutil.which("pdflatex") is not None
+            else {}
+        ),
 
         # --- Colors ---
         "image.cmap":      "gray",
@@ -117,6 +127,11 @@ def _set_publisher_rcparams() -> None:
         # --- Layout to avoid clipped labels ---
         "figure.constrained_layout.use": True,
     })
+    if shutil.which("pdflatex") is None:
+        logger.warning(
+            "pdflatex not found — falling back to matplotlib mathtext. "
+            "Install a LaTeX distribution for publisher-quality output."
+        )
 
 
 # ---------------------------------------------------------------------------
