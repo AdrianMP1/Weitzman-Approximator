@@ -18,11 +18,11 @@ This repository contains the implementations of four heuristic algorithms for ap
 ## Table of Contents
 
 - [Background](#background)
-- [Repository structure](#repository-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Data](#data)
 - [Reproducing the paper results](#reproducing-the-paper-results)
+- [Repository structure](#repository-structure)
+- [Data](#data)
 - [Configuration reference](#configuration-reference)
 - [Algorithms](#algorithms)
 - [Output format](#output-format)
@@ -38,47 +38,6 @@ $$W(A) = \max_{a_i \in A} \bigl[ W(A \setminus \{a_i\}) + d(a_i,\, A \setminus \
 where $d(a_i, Q) = \min_{a_j \in Q} d(a_i, a_j)$ is the minimum distance from point $a_i$ to the remaining set $Q$, and $W(\{a_i\}) = 0$.
 
 Computing $W(A)$ requires evaluating all $n!$ removal sequences and is only feasible for small values of $n$. This paper studies four heuristic algorithms that approximate $W(A)$ efficiently by constructing removal sequences.
-
----
-
-## Repository structure
-
-```
-Clean_Weitzman/
-├── main.py                          ← single entry point (run / batch / plot)
-├── pyproject.toml
-├── configs/
-│   ├── experiment.yaml              ← full experiment (all algorithms, all instances)
-│   └── debug.yaml                   ← fast single-algorithm sanity check
-├── data/
-│   ├── CovLoss(Concave-Convex-Linear)/
-│   │   ├── PFAs_CovLoss_Concave/m3_p4 … m3_p19/
-│   │   ├── PFAs_CovLoss_Convex/m3_p4 … m3_p19/
-│   │   └── PFAs_CovLoss_Linear/m3_p4 … m3_p19/
-│   └── UnifLoss(Concave-Convex-Linear)/
-│       ├── PFAs_UnifLoss_Concave/m3_p4 … m3_p19/
-│       ├── PFAs_UnifLoss_Convex/m3_p4 … m3_p19/
-│       └── PFAs_UnifLoss_Linear/m3_p4 … m3_p19/
-├── experiments/
-│   ├── run_batch.py                 ← orchestrates the full pipeline end-to-end
-│   ├── run_heuristics.py            ← run all configured algorithms (used by run_batch)
-│   ├── run_brute_force.py           ← O(n!) exact solver for small n
-│   ├── run_exact_solver.py          ← B&B exact solver for small n
-│   ├── aggregate_results.py         ← collects per-instance .npy to produce a data.csv
-│   ├── compute_kendall_tau.py       ← Kendall tau correlation table
-│   └── plot_results.py              ← regenerate figures from a finished run
-└── weitzman/
-    ├── algorithms/                  ← one module per heuristic + brute force
-    ├── metrics/                     ← Weitzman computation (B&B), Pure Diversity
-    ├── plotting/                    ← trendlines, box plots
-    ├── io/                          ← .POF loaders, config loader, writers
-    └── utils/                       ← core math, run context, logging
-```
-
-**Naming convention for data subfolders:** `m3_pX` denotes instances on a
-three-objective ($m = 3$) and a parameter $p = X$.
-The number of points is $\binom{p+2}{2}$ (e.g. `m3_p4` -> 15 points,
-`m3_p10` -> 66 points, `m3_p19` -> 210 points).
 
 ---
 
@@ -111,20 +70,6 @@ Verify the installation:
 ```bash
 python -c "import weitzman; print('OK')"
 ```
-
----
-
-## Data
-
-The `data/` directory is organised by Coverage and Uniformity, then for Pareto front geometry:
-
-| Group | Geometries | Instances per geometry |
-|-------|-----------|----------------------|
-| `CovLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage values |
-| `UnifLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage values |
-
-Each `.POF` file contains one three-objective Pareto front. Files at size `m3_p4`
-have 15 points; files at `m3_p19` have 210 points.
 
 ---
 
@@ -172,6 +117,61 @@ python main.py run --config debug.yaml -v
 | `--no-plots` | Skip figure generation (run only) |
 | `--force` | Re-run even if output exists (batch only) |
 | `-v` / `-vv` | Increase log verbosity |
+
+---
+
+## Repository structure
+
+```
+Clean_Weitzman/
+├── main.py                          ← single entry point (run / batch / plot)
+├── pyproject.toml
+├── configs/
+│   ├── experiment.yaml              ← full experiment (all algorithms, all instances)
+│   └── debug.yaml                   ← fast single-algorithm sanity check
+├── data/
+│   ├── CovLoss(Concave-Convex-Linear)/
+│   │   ├── PFAs_CovLoss_Concave/m3_p4 … m3_p19/
+│   │   ├── PFAs_CovLoss_Convex/m3_p4 … m3_p19/
+│   │   └── PFAs_CovLoss_Linear/m3_p4 … m3_p19/
+│   └── UnifLoss(Concave-Convex-Linear)/
+│       ├── PFAs_UnifLoss_Concave/m3_p4 … m3_p19/
+│       ├── PFAs_UnifLoss_Convex/m3_p4 … m3_p19/
+│       └── PFAs_UnifLoss_Linear/m3_p4 … m3_p19/
+├── experiments/
+│   ├── run_batch.py                 ← orchestrates the full pipeline end-to-end
+│   ├── run_heuristics.py            ← run all configured algorithms (used by run_batch)
+│   ├── run_brute_force.py           ← O(n!) exact solver for small n
+│   ├── run_exact_solver.py          ← B&B exact solver for small n
+│   ├── aggregate_results.py         ← collects per-instance .npy to produce a data.csv
+│   ├── compute_kendall_tau.py       ← Kendall tau correlation table
+│   └── plot_results.py              ← regenerate figures from a finished run
+└── weitzman/
+    ├── algorithms/                  ← one module per heuristic + brute force
+    ├── metrics/                     ← Weitzman computation (B&B), Pure Diversity
+    ├── plotting/                    ← trendlines, box plots
+    ├── io/                          ← .POF loaders, config loader, writers
+    └── utils/                       ← core math, run context, logging
+```
+
+**Naming convention for data subfolders:** `m3_pX` denotes instances on a
+three-objective ($m = 3$) and a parameter $p = X$.
+The number of points is $\binom{p+2}{2}$ (e.g. `m3_p4` -> 15 points,
+`m3_p10` -> 66 points, `m3_p19` -> 210 points).
+
+---
+
+## Data
+
+The `data/` directory is organised by Coverage and Uniformity, then for Pareto front geometry:
+
+| Group | Geometries | Instances per geometry |
+|-------|-----------|----------------------|
+| `CovLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage values |
+| `UnifLoss` | Concave, Convex, Linear | 16 sizes × 6 coverage values |
+
+Each `.POF` file contains one three-objective Pareto front. Files at size `m3_p4`
+have 15 points; files at `m3_p19` have 210 points.
 
 ---
 
