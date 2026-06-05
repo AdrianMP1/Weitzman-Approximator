@@ -185,7 +185,7 @@ experiment:
   seed: 42
 
 data:
-  instances_dir: "data/CovLoss(Concave-Convex-Linear)/PFAs_CovLoss_Linear/m3_p4" # For single runs, not batch
+  instances_dir: "data/CovLoss/PFAs_CovLoss_Linear/m3_p4" # For single runs, not batch
   instance_pattern: ".POF"
   labeled: false          # true for files with " -> label" suffix on each line
 
