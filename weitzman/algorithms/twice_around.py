@@ -44,12 +44,75 @@ from weitzman.io.writers import write_values
 from weitzman.utils.operations import (
     compute_distance_matrix,
     evaluate_removal_sequence,
-    multigraph_to_adjlist,
-    greedy_euler_circuit,
+    _multigraph_to_adjlist,
+    _greedy_euler_circuit,
     shortcut_to_hamiltonian,
+    prepare_sorted_greedy_euler_adjacency,
+    run_greedy_euler_circuit,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def compare_old_vs_fast_greedy_euler(
+    multigraph,
+    mode: str = "max",
+    verbose: bool = True,
+) -> None:
+    """
+    Compare the original greedy Euler implementation against the optimized
+    sorted-pointer implementation for every possible starting vertex.
+
+    Raises AssertionError if a mismatch is found.
+    """
+    old_adj = _multigraph_to_adjlist(multigraph)
+
+    sorted_adj, num_edges = prepare_sorted_greedy_euler_adjacency(
+        multigraph,
+        mode=mode,
+    )
+
+    nodes = list(multigraph.nodes())
+
+    iterator = tqdm(
+        nodes,
+        desc=f"Comparing Euler circuits ({mode}) TAT",
+        unit="start",
+        disable=not verbose,
+        leave=True,
+    )
+
+    for start in iterator:
+        old_euler = _greedy_euler_circuit(
+            old_adj,
+            start=start,
+            mode=mode,
+        )
+
+        fast_euler = run_greedy_euler_circuit(
+            sorted_adj=sorted_adj,
+            start=start,
+            num_edges=num_edges,
+        )
+
+        if old_euler != fast_euler:
+            iterator.close()
+
+            print(
+                "[compare_old_vs_fast_greedy_euler] MISMATCH FOUND\n"
+                f"mode: {mode}\n"
+                f"start: {start}\n"
+                f"old : {old_euler}\n"
+                f"fast: {fast_euler}"
+            )
+
+            raise AssertionError(
+                "Mismatch found\n"
+                f"mode: {mode}\n"
+                f"start: {start}\n"
+                f"old : {old_euler}\n"
+                f"fast: {fast_euler}\n"
+            )
 
 
 def _solve_instance(
@@ -91,9 +154,11 @@ def _solve_instance(
         multigraph.add_edge(u, v, weight=w)   # original edge
         multigraph.add_edge(u, v, weight=w)   # duplicate edge
 
-    # Convert to a plain adjacency list so the Euler traversal can
-    # pop edges efficiently without NetworkX overhead.
-    adj = multigraph_to_adjlist(multigraph)
+    # --- REMOVE THIS ---
+    compare_old_vs_fast_greedy_euler(multigraph, mst_mode)
+
+    # Make a sorted adjacency list
+    sorted_adj, num_edges = prepare_sorted_greedy_euler_adjacency(multigraph, mst_mode)
 
     # --- Steps 3–5: Euler circuit -> Hamiltonian shortcut -> removal order ---
     sequences: list[list[int]] = []
@@ -103,7 +168,11 @@ def _solve_instance(
         # Greedy Euler circuit starting from `start`.
         # Different starting vertices explore different parts of the multigraph
         # first, yielding different shortcuts and therefore different sequences.
-        euler = greedy_euler_circuit(adj, start=start, mode=mst_mode)
+        euler = run_greedy_euler_circuit(
+                sorted_adj=sorted_adj,
+                start=start,
+                num_edges=num_edges,
+        )
 
         # Shortcut: the first visit to each vertex is kept, the rest skipped.
         # This produces a Hamiltonian path (visits every vertex exactly once).
