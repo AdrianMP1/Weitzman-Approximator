@@ -1,5 +1,5 @@
 """
-Christofides-inspired heuristic for the Weitzman diversity index.
+Christofides-inspired heuristic for the Weitzman diversity.
 
 Strategy
 --------
@@ -39,73 +39,12 @@ from weitzman.io.writers import write_values
 from weitzman.utils.operations import (
     compute_distance_matrix,
     evaluate_removal_sequence,
-    _multigraph_to_adjlist,
-    _greedy_euler_circuit,
     shortcut_to_hamiltonian,
     prepare_sorted_greedy_euler_adjacency,
     run_greedy_euler_circuit,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def compare_old_vs_fast_greedy_euler(
-    multigraph,
-    mode: str = "max",
-    verbose: bool = True,
-) -> None:
-    """
-    Compare the original greedy Euler implementation against the optimized
-    sorted-pointer implementation for every possible starting vertex.
-
-    Raises AssertionError if a mismatch is found.
-    """
-    old_adj = _multigraph_to_adjlist(multigraph)
-
-    sorted_adj, num_edges = prepare_sorted_greedy_euler_adjacency(
-        multigraph,
-        mode=mode,
-    )
-
-    nodes = list(multigraph.nodes())
-
-    iterator = tqdm(
-        nodes,
-        desc=f"Comparing Euler circuits ({mode}) CHR",
-        unit="start",
-        disable=not verbose,
-        leave=True,
-    )
-
-    for start in iterator:
-        old_euler = _greedy_euler_circuit(
-            old_adj,
-            start=start,
-            mode=mode,
-        )
-
-        fast_euler = run_greedy_euler_circuit(
-            sorted_adj=sorted_adj,
-            start=start,
-            num_edges=num_edges,
-        )
-
-        if old_euler != fast_euler:
-            iterator.close()
-
-            print(
-                "[compare_old_vs_fast_greedy_euler] MISMATCH FOUND\n"
-                f"mode: {mode}\n"
-                f"start: {start}\n"
-                f"old : {old_euler}\n"
-                f"fast: {fast_euler}"
-            )
-
-            raise AssertionError(
-                "Mismatch found\n"
-                f"mode: {mode}\n"
-            )
-
 
 def _solve_instance(
     lattice_path: Path,
@@ -122,7 +61,7 @@ def _solve_instance(
     d_matrix = compute_distance_matrix(lattice)
     n = d_matrix.shape[0]
 
-    # --- Step 1: complete graph and spanning tree ---
+    # Complete graph and spanning tree
     G = nx.Graph()
     for i in range(n):
         for j in range(i + 1, n):
@@ -135,12 +74,12 @@ def _solve_instance(
     else:
         raise ValueError(f"mst_mode must be 'max' or 'min', got '{mst_mode}'")
 
-    # --- Step 2: identify odd-degree vertices ---
+    # Identify odd-degree vertices
     # In any spanning tree of n vertices, exactly those vertices with
     # odd degree need extra edges to become even.
     odd_nodes = [v for v, deg in T.degree() if deg % 2 == 1]
 
-    # --- Step 3: matching on the odd-degree subgraph ---
+    # Matching on the odd-degree subgraph
     # Build a subgraph restricted to the odd vertices; the matching
     # only needs to cover those nodes.
     M_graph = G.subgraph(odd_nodes).copy()
@@ -152,13 +91,13 @@ def _solve_instance(
             M_graph, weight="weight", maxcardinality=True
         )
     else:
-        # Minimum-weight matching: adds the lightest edges - classical
+        # Minimum-weight matching: adds the lightest edges
         # Christofides choice for TSP approximation.
         matching = nx.algorithms.matching.min_weight_matching(
             M_graph, weight="weight"
         )
 
-    # --- Step 4: merge tree + matching into an Eulerian multigraph ---
+    # Merge tree + matching into an Eulerian multigraph
     # After adding the matching edges, every previously odd-degree vertex
     # gains one more edge and becomes even-degree.
     multigraph = nx.MultiGraph()
@@ -166,15 +105,12 @@ def _solve_instance(
     for u, v in matching:
         multigraph.add_edge(u, v, weight=float(d_matrix[u, v]))  # matching edges
 
-    # --- DELETE THIS ---
-    compare_old_vs_fast_greedy_euler(multigraph, mst_mode)
-
     # Make a sorted adjacency list
     sorted_adj, num_edges = prepare_sorted_greedy_euler_adjacency(
             multigraph, mst_mode
     )
 
-    # --- Step 5: Euler circuit -> Hamiltonian shortcut -> removal order ---
+    # Euler circuit -> Hamiltonian shortcut -> removal order
     sequences: list[list[int]] = []
     values: list[float] = []
 
@@ -184,8 +120,7 @@ def _solve_instance(
         # the shortcut toward sequences with larger (or smaller) early steps.
         euler = run_greedy_euler_circuit(
                     sorted_adj=sorted_adj,
-                    start=start,
-                    num_edges=num_edges,
+                    start=start, num_edges=num_edges,
         )
 
         # Skip repeated vertices to collapse the Euler circuit into a

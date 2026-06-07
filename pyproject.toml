@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "weitzman"
 version = "1.0.0"
 requires-python = ">=3.10"
-description = "Heuristics for the Weitzman diversity index on Pareto fronts."
+description = "Heuristics to Approximate the Weitzman diversity on Pareto fronts."
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",

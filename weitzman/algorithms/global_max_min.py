@@ -1,5 +1,5 @@
 """
-Global Max-Min heuristic for the Weitzman diversity index.
+Global Max-Min heuristic for Weitzman diversity.
 
 Strategy
 --------

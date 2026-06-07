@@ -1,11 +1,11 @@
 """
-Exact Weitzman solver for instances up to n ≈ 36 using branch-and-bound.
+Exact Weitzman solver for instances up to n \\approx 36 using branch-and-bound.
 
 For each .POF instance whose point count n falls within exact_solver.n_max,
 runs WeitzmanBBSolver and saves the optimal W(A) value.
 
 Unlike run_brute_force.py, this does NOT enumerate the full permutation
-distribution - it only computes the maximum (W(A)).
+distribution, it only computes the maximum W(A).
 
 Usage (standalone):
     python experiments/run_exact_solver.py --config experiment.yaml

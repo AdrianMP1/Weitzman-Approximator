@@ -1,8 +1,8 @@
 """
-Branch-and-bound exact solver for the Weitzman diversity index.
+Branch-and-bound exact solver for Weitzman diversity
 
-Extends ground-truth computation from n ≈ 12 (brute-force enumeration) to
-n ≈ 36 by exploiting the closest-pair branching structure of the recursion:
+Extends ground-truth computation from n \\approx 12 (brute-force enumeration) to
+n \\approx 36 by exploiting the closest-pair branching structure of the recursion:
 
     W(S) = d(g, h) + max( W(S∖{g}),  W(S∖{h}) )
 

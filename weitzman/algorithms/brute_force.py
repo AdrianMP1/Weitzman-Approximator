@@ -1,5 +1,5 @@
 """
-Brute-force exact solver for the Weitzman diversity index.
+Brute-force exact solver for Weitzman diversity.
 
 Enumerates all n! removal sequences and evaluates each one.
 The maximum value found is the true Weitzman diversity W(A).
