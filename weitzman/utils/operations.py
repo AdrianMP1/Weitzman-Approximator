@@ -30,14 +30,14 @@ def evaluate_removal_sequence(
 
     Parameters
     ----------
-    removal_sequence : ordered permutation of {0, ..., n-1}
+    removal_sequence: ordered permutation of {0, ..., n-1}
         Index 0 is removed first; the last index contributes 0
         (it is the only remaining element, so its set is empty).
-    d_matrix : (n, n) symmetric distance matrix.
+    d_matrix: (n, n) symmetric distance matrix.
 
     Returns
     -------
-    float : Weitzman diversity value for this specific removal order.
+    float: Weitzman diversity value for this specific removal order.
     """
     w = 0.0
 
@@ -63,7 +63,6 @@ def evaluate_removal_sequence(
 def compute_distance_matrix(lattice: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Compute the (n, n) pairwise Euclidean distance matrix for an (n, d) array.
-
     Uses broadcasting to avoid an explicit double loop.
     """
     # diff[i, j, :] = lattice[i] - lattice[j]  - shape (n, n, d)
@@ -121,7 +120,6 @@ def multigraph_to_edgeid_adjlist(multigraph) -> tuple[EdgeIDAdjList, int]:
     Each edge is stored twice:
         u -> v
         v -> u
-
     local_order preserves the insertion order of each directed copy inside
     that endpoint's adjacency list.
 
@@ -156,7 +154,6 @@ def sort_edgeid_adjlist(
 
     mode = 'max': choose largest weight,
         ties resolved by first original adjacency occurence.
-
     mode = 'min': choose smallest weight,
         ties resolved by first original adjacency occurence.
     """
@@ -186,11 +183,9 @@ def greedy_euler_circuit_sorted_ptr(
     Parameters
     ----------
     sorted_adj: Edge-ID adjacency list already sorted according to the desired mode.
-
+    
     start: Starting vertex.
-
-    num_edges: Number of undirected multigraph edges. This is the number of
-        unique edge IDs.
+    num_edges: Number of undirected multigraph edges. This is the number of unique edge IDs.
 
     Returns
     -------
@@ -221,13 +216,11 @@ def greedy_euler_circuit_sorted_ptr(
         ptr[v] = p
         if p < len(edges):
             u, _w, edge_id, _local_order = edges[p]
-
             used[edge_id] = True
             ptr[v] += 1
             stack.append(u)
         else:
             euler_circuit.append(stack.pop())
-
     return euler_circuit[::-1]
 
 
@@ -236,8 +229,8 @@ def prepare_sorted_greedy_euler_adjacency(
     mode: str = "max",
 ) -> tuple[EdgeIDAdjList, int]:
     """
-    Prepare the sorted adjacency structure used by the greedy Hierholzer
-    Euler traversal.
+    Prepare the sorted adjacency structure used by 
+    the greedy Hierholzer Euler traversal.
     """
     edgeid_adj, num_edges = multigraph_to_edgeid_adjlist(multigraph)
     sorted_adj = sort_edgeid_adjlist(edgeid_adj, mode=mode)
@@ -250,7 +243,7 @@ def run_greedy_euler_circuit(
     num_edges: int,
 ) -> list[int]:
     """
-    Thin wrapper around the pointer-based implementation.
+    Wrapper around the pointer-based implementation.
     """
     return greedy_euler_circuit_sorted_ptr(
         sorted_adj=sorted_adj,
