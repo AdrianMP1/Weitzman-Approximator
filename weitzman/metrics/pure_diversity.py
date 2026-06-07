@@ -1,8 +1,19 @@
 """
 Pure Diversity (PD) indicator for Euclidean distance.
 
-Python adaptation of the MATLAB implementation by Handing Wang:
+This file is a Python adaptation of the MATLAB implementation distributed with:
+
+    Handing Wang, Yaochu Jin, Xin Yao,
+    "Diversity Assessment in Many-Objective Optimization",
+    IEEE Transactions on Cybernetics, 2017.
+    DOI: 10.1109/TCYB.2016.2550502
+
+Original MATLAB code:
     https://github.com/HandingWang/PD
+
+Authors state that the code is free to use for non-commercial purposes
+and requests acknowledgement. This Python adaptation preserves that
+restriction.
 """
 
 import numpy as np
